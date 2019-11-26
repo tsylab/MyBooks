@@ -10,14 +10,14 @@ class BooksApp extends React.Component {
     myBooks: [],
     searchResults: []
   }
-  // Describes shelves list of MyBooks. Icon - is className of Font Awesome icon library (v.5.2.0 free)
+  // Describes shelves list of MyBooks. Icon - is className of Font Awesome icon library
   shelves = [
     { id: 1, title: 'Currently Reading', shelf: 'currentlyReading', icon: 'fas fa-book-reader' },
     { id: 2, title: 'Want to Read', shelf: 'wantToRead', icon: 'fas fa-grin-stars' },
     { id: 3, title: 'Read', shelf: 'read', icon: 'fas fa-book'}
   ];
 
-  // Array of popup actions for book
+  // Array of popup actions for change book shelf
   popupOptions = [
     { id: 0, name: 'Move to...', value: 'move', disabled: true },
     { id: 1, name: 'Currently Reading', value: 'currentlyReading' },
@@ -26,10 +26,16 @@ class BooksApp extends React.Component {
     { id: 4, name: 'None', value: 'none' }
   ]
 
+  /**
+   * Sets initial state
+   */
   componentDidMount() {
     this.loadBooks();
   }
 
+  /**
+   * Async load of my books info using BookAPI
+   */
   loadBooks() {
     BooksAPI.getAll().then(
       (books) => {
@@ -38,6 +44,11 @@ class BooksApp extends React.Component {
     )
   }
 
+  /**
+   * Async bookshelf update using BookAPI. If update is failed, reloads all books and throws alert
+   * @param {*} bookId - ID of book to change
+   * @param {*} shelfValue - new shelf value for book. One of ['currentlyReading', 'wantToRead', 'read', 'none']
+   */
   updateShelves(bookId, shelfValue) {
     BooksAPI.update({ id: bookId }, shelfValue).then((shelvesInfo) => {
       if (!shelvesInfo || shelvesInfo.error) {
@@ -47,11 +58,15 @@ class BooksApp extends React.Component {
     });
   }
 
+  /**
+   * Change bookshelf.
+   * To make app more responsive, new state applies immediately, actual changes on server side makes in async mode
+   * @param {*} bookId - ID of book to change
+   * @param {*} shelfValue - new shelf value for book. One of ['currentlyReading', 'wantToRead', 'read', 'none']
+   */
   shelfChange(bookId, shelfValue) {
     if (bookId && shelfValue) {
-    /*BooksAPI.update({ id: bookId }, shelfValue).then((el) => {
-      this.loadBooks();
-    });*/
+
       this.updateShelves(bookId, shelfValue);
       this.setState((currState) => {
         if (shelfValue === 'none') {
@@ -75,12 +90,19 @@ class BooksApp extends React.Component {
     }
   }
 
+  /**
+   * Async launch of search using BookAPI.
+   * After getting search result from API, expands it with info of books in my library (if there any intersections).
+   * Applies results to state
+   * @param {*} value - search query
+   */
   launchSearch(value) {
     if (value) {
       BooksAPI.search(value).then((books) => {
         if (!books || books.error) books = [];
         books = books.map((book) => {
           const inLibraryBook = this.state.myBooks.find((myBook) => (myBook.id === book.id));
+          // if finded book is in my library
           if (inLibraryBook && inLibraryBook.shelf) {
             book.shelf = inLibraryBook.shelf;
             book.bookIcon = this.shelves.find((shelf) => (shelf.shelf === book.shelf)).icon;
@@ -101,6 +123,11 @@ class BooksApp extends React.Component {
     clearTimeout(this.searchTimeoutId);
   }
 
+  /**
+   * Closes search page.
+   * Clears search result, reloads books info, changes URL to root
+   * @param {*} history - history object
+   */
   closeSearch(history) {
     //Clean search results
     this.setState({
@@ -115,6 +142,12 @@ class BooksApp extends React.Component {
     )
   }
 
+  /**
+   * Adds book from search results into my library
+   * To make app more responsive, new state applies immediately, actual changes on server side makes in async mode
+   * @param {*} bookId - ID of book to change
+   * @param {*} shelfValue - new shelf value for book. One of ['currentlyReading', 'wantToRead', 'read', 'none']
+   */
   addBook(bookId, shelfValue) {
     if (bookId && shelfValue) {
       this.setState((currState) => {

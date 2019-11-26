@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom'
 
-const SearchButton = (props) => (
+/**
+ * Button change route to /search
+ */
+
+const SearchButton = () => (
   <div className="open-search">
     <Link
       to='/search'>

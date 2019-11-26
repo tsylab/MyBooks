@@ -14,7 +14,7 @@ const MyReads = (props) => (
             <Bookshelf
               title={shelf.title}
               icon={shelf.icon}
-              books={props.books.filter((book) => (book.shelf === shelf.shelf)).sort((a, b) => {
+              books={props.books.filter((book) => (book.shelf === shelf.shelf)).sort((a, b) => { // books are sorted by title
                 if (a.title > b.title) {
                   return 1;
                 }
